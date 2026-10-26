@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
+import { API_BASE } from '../config';
 
 const AddToolForm = ({ onToolAdded }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage('');
+    setSubmitError(false);
 
     try {
-      const response = await fetch('/api/tools', {
+      const response = await fetch(`${API_BASE}/tools`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description }),
@@ -23,46 +26,48 @@ const AddToolForm = ({ onToolAdded }) => {
         setName('');
         setDescription('');
         onToolAdded();
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setSubmitError(true);
+        setSubmitMessage(data.message || 'Could not list the tool.');
       }
     } catch (error) {
-      setSubmitMessage('❌ Error listing tool.');
+      setSubmitError(true);
+      setSubmitMessage('Network error. Is the server running?');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="add-tool-form">
-      <h3>📋 List a New Tool</h3>
+    <div className="form-card">
+      <h2>📋 List a New Tool</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Tool Name</label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="e.g. Power Drill"
-          />
-        </div>
+        <label htmlFor="tool-name">TOOL NAME</label>
+        <input
+          id="tool-name"
+          type="text"
+          placeholder="e.g. Power Drill"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
-        <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            placeholder="Short description..."
-          />
-        </div>
+        <label htmlFor="tool-desc">DESCRIPTION</label>
+        <textarea
+          id="tool-desc"
+          placeholder="Short description..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
         {submitMessage && (
-          <p className="submit-msg">{submitMessage}</p>
+          <div className={submitError ? 'form-error' : 'form-success'}>
+            {submitMessage}
+          </div>
         )}
 
-        <button type="submit" disabled={isSubmitting} className="submit-btn">
+        <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Listing...' : 'List Tool'}
         </button>
       </form>

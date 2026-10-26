@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import ToolList from './components/ToolList';
 import AddToolForm from './components/AddToolForm';
+import { API_BASE } from './config';
 import './App.css';
 
 function App() {
@@ -10,7 +11,7 @@ function App() {
   const fetchTools = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/tools');
+      const response = await fetch(`${API_BASE}/tools`);
       const data = await response.json();
       setTools(data);
     } catch (error) {
@@ -29,8 +30,8 @@ function App() {
     fetchTools();
   };
 
+  // Replace the updated tool with a new array so React re-renders.
   const handleToolUpdate = (updatedTool) => {
-    // Create a new array so React sees the change and re-renders.
     setTools(prevTools =>
       prevTools.map(t => (t.id === updatedTool.id ? updatedTool : t))
     );
