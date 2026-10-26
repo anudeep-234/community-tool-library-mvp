@@ -63,3 +63,8 @@ Ratings, reviews, image uploads, and categories are out of scope for this MVP.
 ## 5. Video Explanation
 
 TODO: add Google Drive link, set to "Anyone with the link can view"
+
+## 6. Deployment Configuration
+
+- **API base URL:** `client/src/config.js` reads `VITE_API_URL` at build time and falls back to `/api` for local development through the Vite proxy. The deployed frontend sets `VITE_API_URL` to the backend's public URL, so requests go straight to the Render server.
+- **Deploy order:** Deploy the backend first, then set the frontend's `VITE_API_URL` before its first build, since Vite bakes the value into the bundle.
