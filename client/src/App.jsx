@@ -1,24 +1,17 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ToolList from './components/ToolList';
 import AddToolForm from './components/AddToolForm';
+import { API_BASE } from './config';
 import './App.css';
 
 function App() {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // MAJOR FRONTEND BUG 1: Infinite Loop / Component Re-mounting
-  // We are missing the dependency array [] in this useEffect.
-  // This causes the component to fetch, set state, re-render, and fetch again indefinitely.
-  useEffect(() => { 
-    console.log("Fetching tools...");
-    fetchTools(); 
-  }); 
-
   const fetchTools = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/tools');
+      const response = await fetch(`${API_BASE}/tools`);
       const data = await response.json();
       setTools(data);
     } catch (error) {
@@ -28,20 +21,20 @@ function App() {
     }
   };
 
+  // Run once on page load. The empty array stops the request loop.
+  useEffect(() => {
+    fetchTools();
+  }, []);
+
   const handleToolAdded = () => {
     fetchTools();
   };
 
+  // Replace the updated tool with a new array so React re-renders.
   const handleToolUpdate = (updatedTool) => {
-    // MAJOR FRONTEND BUG 2: Direct State Mutation
-    // Instead of setTools(tools.map(...)), we are modifying the state object directly.
-    // This often causes the UI to not re-render because the state reference hasn't changed.
-    const index = tools.findIndex(t => t.id === updatedTool.id);
-    if (index !== -1) {
-      tools[index] = updatedTool; 
-      // Oops, forgot to call setTools with a new array reference!
-      console.log("Tools mutated directly:", tools);
-    }
+    setTools(prevTools =>
+      prevTools.map(t => (t.id === updatedTool.id ? updatedTool : t))
+    );
   };
 
   return (
